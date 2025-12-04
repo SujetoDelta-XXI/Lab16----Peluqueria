@@ -1,5 +1,5 @@
 {
-  "name": "frotend_peluqueria",
+  "name": "frontend-peluqueria",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,7 +11,9 @@
   "dependencies": {
     "next": "16.0.7",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "axios": "^1.6.2",
+    "react-hook-form": "^7.49.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
