@@ -8,6 +8,11 @@ import { useAuth } from '@/contexts/AuthContext';
 
 type Step = 'service' | 'hairstylist' | 'datetime' | 'confirm';
 
+interface TimeSlot {
+  inicio: string;
+  fin: string;
+}
+
 export default function ReservarPage() {
   const router = useRouter();
   const { user, logout } = useAuth();
@@ -18,7 +23,7 @@ export default function ReservarPage() {
   // Data
   const [servicios, setServicios] = useState<any[]>([]);
   const [peluqueros, setPeluqueros] = useState<any[]>([]);
-  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
 
   // Selection
   const [selectedService, setSelectedService] = useState<any>(null);
