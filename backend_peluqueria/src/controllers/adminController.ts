@@ -564,7 +564,13 @@ export const getAusencias = async (req: any, res: Response): Promise<void> => {
     }
 
     const ausencias = await Ausencia.find(query)
-      .populate('peluqueroId', 'nombre email')
+      .populate({
+        path: 'peluqueroId',
+        populate: {
+          path: 'usuarioId',
+          select: 'nombre email'
+        }
+      })
       .sort({ fechaInicio: -1 });
 
     res.status(200).json({
@@ -597,7 +603,13 @@ export const createAusencia = async (req: any, res: Response): Promise<void> => 
       motivo,
     });
 
-    await ausencia.populate('peluqueroId', 'nombre email');
+    await ausencia.populate({
+      path: 'peluqueroId',
+      populate: {
+        path: 'usuarioId',
+        select: 'nombre email'
+      }
+    });
 
     res.status(201).json({
       message: 'Ausencia creada exitosamente',
@@ -623,7 +635,13 @@ export const getAusenciaById = async (req: any, res: Response): Promise<void> =>
     const { id } = req.params;
 
     const ausencia = await Ausencia.findById(id)
-      .populate('peluqueroId', 'nombre email');
+      .populate({
+        path: 'peluqueroId',
+        populate: {
+          path: 'usuarioId',
+          select: 'nombre email'
+        }
+      });
 
     if (!ausencia) {
       res.status(404).json({
@@ -672,7 +690,13 @@ export const updateAusencia = async (req: any, res: Response): Promise<void> => 
     if (motivo !== undefined) ausencia.motivo = motivo;
 
     await ausencia.save();
-    await ausencia.populate('peluqueroId', 'nombre email');
+    await ausencia.populate({
+      path: 'peluqueroId',
+      populate: {
+        path: 'usuarioId',
+        select: 'nombre email'
+      }
+    });
 
     res.status(200).json({
       message: 'Ausencia actualizada exitosamente',

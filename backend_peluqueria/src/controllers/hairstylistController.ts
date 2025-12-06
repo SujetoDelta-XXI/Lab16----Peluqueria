@@ -294,7 +294,16 @@ export const getProfile = async (req: any, res: Response): Promise<void> => {
       return;
     }
 
-    res.status(200).json({ peluquero });
+    // Return structured data with usuario and peluquero separated
+    res.status(200).json({ 
+      usuario: peluquero.usuarioId,
+      peluquero: {
+        _id: peluquero._id,
+        estado: peluquero.estado,
+        serviciosEspecializados: peluquero.serviciosEspecializados,
+        horarioDisponible: peluquero.horarioDisponible,
+      }
+    });
   } catch (error: any) {
     console.error('Error al obtener perfil:', error);
     res.status(500).json({

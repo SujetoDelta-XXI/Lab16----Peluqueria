@@ -272,8 +272,8 @@ function ProfileContent() {
                                 <div key={dia} className="flex justify-between items-center py-2 border-b border-gray-100">
                                   <span className="font-medium text-gray-700 capitalize">{dia}</span>
                                   {horario.disponible ? (
-                                    <span className="text-gray-600">
-                                      {horario.inicio} - {horario.fin}
+                                    <span className="text-gray-900 font-semibold">
+                                      {horario.inicio || '09:00'} - {horario.fin || '18:00'}
                                     </span>
                                   ) : (
                                     <span className="text-gray-400">No disponible</span>

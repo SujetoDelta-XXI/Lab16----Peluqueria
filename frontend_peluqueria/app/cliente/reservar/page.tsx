@@ -150,30 +150,24 @@ export default function ReservarPage() {
         <nav className="bg-white border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex space-x-8">
-              <button
-                onClick={() => router.push('/cliente/dashboard')}
-                className="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              >
-                Inicio
-              </button>
-              <button
-                onClick={() => router.push('/cliente/reservar')}
-                className="border-b-2 border-blue-500 py-4 px-1 text-sm font-medium text-blue-600"
-              >
-                Reservar Cita
-              </button>
-              <button
-                onClick={() => router.push('/cliente/citas')}
-                className="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              >
-                Mis Citas
-              </button>
-              <button
-                onClick={() => router.push('/cliente/perfil')}
-                className="border-b-2 border-transparent py-4 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              >
-                Mi Perfil
-              </button>
+              {[
+                { path: '/cliente/dashboard', label: 'Inicio', active: false },
+                { path: '/cliente/reservar', label: 'Reservar Cita', active: true },
+                { path: '/cliente/citas', label: 'Mis Citas', active: false },
+                { path: '/cliente/perfil', label: 'Mi Perfil', active: false },
+              ].map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => router.push(item.path)}
+                  className={`border-b-2 ${
+                    item.active
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  } py-4 px-1 text-sm font-medium`}
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
           </div>
         </nav>
@@ -188,27 +182,32 @@ export default function ReservarPage() {
                 { key: 'hairstylist', label: 'Peluquero' },
                 { key: 'datetime', label: 'Fecha y Hora' },
                 { key: 'confirm', label: 'Confirmar' },
-              ].map((step, index) => (
-                <div key={step.key} className="flex items-center flex-1">
-                  <div className="flex items-center">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        currentStep === step.key
-                          ? 'bg-blue-600 text-white'
-                          : index < ['service', 'hairstylist', 'datetime', 'confirm'].indexOf(currentStep)
-                          ? 'bg-green-600 text-white'
-                          : 'bg-gray-300 text-gray-600'
-                      }`}
-                    >
-                      {index + 1}
+              ].map((step, index) => {
+                const steps: Step[] = ['service', 'hairstylist', 'datetime', 'confirm'];
+                const currentStepIndex = steps.indexOf(currentStep);
+                
+                return (
+                  <div key={step.key} className="flex items-center flex-1">
+                    <div className="flex items-center">
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          currentStep === step.key
+                            ? 'bg-blue-600 text-white'
+                            : index < currentStepIndex
+                            ? 'bg-green-600 text-white'
+                            : 'bg-gray-300 text-gray-600'
+                        }`}
+                      >
+                        {index + 1}
+                      </div>
+                      <span className="ml-2 text-sm font-medium text-gray-900">{step.label}</span>
                     </div>
-                    <span className="ml-2 text-sm font-medium text-gray-900">{step.label}</span>
+                    {index < 3 && (
+                      <div className="flex-1 h-0.5 bg-gray-300 mx-4"></div>
+                    )}
                   </div>
-                  {index < 3 && (
-                    <div className="flex-1 h-0.5 bg-gray-300 mx-4"></div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -340,15 +339,20 @@ export default function ReservarPage() {
                       </p>
                     ) : (
                       <div className="grid grid-cols-4 gap-2">
-                        {availableSlots.map((slot) => (
-                          <button
-                            key={slot}
-                            onClick={() => handleTimeSelect(slot)}
-                            className="px-4 py-2 border-2 border-gray-200 rounded-md hover:border-blue-500 hover:bg-blue-50 transition-colors text-sm font-medium"
-                          >
-                            {slot}
-                          </button>
-                        ))}
+                        {availableSlots.map((slot, index) => {
+                          const slotInicio = typeof slot === 'string' ? slot : slot.inicio;
+                          const slotFin = typeof slot === 'string' ? '' : slot.fin;
+                          const displayText = slotFin ? `${slotInicio} - ${slotFin}` : slotInicio;
+                          return (
+                            <button
+                              key={`${slotInicio}-${index}`}
+                              onClick={() => handleTimeSelect(slotInicio)}
+                              className="px-4 py-2 border-2 border-gray-200 rounded-md hover:border-blue-500 hover:bg-blue-50 transition-colors text-sm text-gray-900"
+                            >
+                              {displayText}
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -372,16 +376,16 @@ export default function ReservarPage() {
 
                 <div className="bg-gray-50 rounded-lg p-4 mb-6 space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Servicio:</span>
-                    <span className="font-semibold">{selectedService?.nombre}</span>
+                    <span className="text-gray-900">Servicio:</span>
+                    <span className="text-gray-900">{selectedService?.nombre}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Peluquero:</span>
-                    <span className="font-semibold">{selectedHairstylist?.nombre}</span>
+                    <span className="text-gray-900">Peluquero:</span>
+                    <span className="text-gray-900">{selectedHairstylist?.nombre}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Fecha:</span>
-                    <span className="font-semibold">
+                    <span className="text-gray-900">Fecha:</span>
+                    <span className="text-gray-900">
                       {new Date(selectedDate).toLocaleDateString('es-ES', {
                         weekday: 'long',
                         year: 'numeric',
@@ -391,16 +395,16 @@ export default function ReservarPage() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Hora:</span>
-                    <span className="font-semibold">{selectedTime}</span>
+                    <span className="text-gray-900">Hora:</span>
+                    <span className="text-gray-900">{selectedTime}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Duración:</span>
-                    <span className="font-semibold">{selectedService?.duracionMinutos} min</span>
+                    <span className="text-gray-900">Duración:</span>
+                    <span className="text-gray-900">{selectedService?.duracionMinutos} min</span>
                   </div>
                   <div className="flex justify-between text-lg pt-3 border-t">
-                    <span className="text-gray-900 font-semibold">Total:</span>
-                    <span className="font-bold text-blue-600">S/. {selectedService?.precio}</span>
+                    <span className="text-gray-900">Total:</span>
+                    <span className="text-gray-900">S/. {selectedService?.precio}</span>
                   </div>
                 </div>
 

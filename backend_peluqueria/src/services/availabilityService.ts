@@ -135,7 +135,9 @@ export const calculateAvailableSlots = async (params: AvailabilityParams): Promi
     throw new Error('Configuración del negocio no encontrada');
   }
 
-  const totalDuration = servicio.duracionMinutos + negocio.tiempoBufferMinutos;
+  const serviceDuration = servicio.duracionMinutos;
+  const bufferTime = negocio.tiempoBufferMinutos;
+  const totalDuration = serviceDuration + bufferTime;
 
   // 3. Get hairstylist's appointments and absences
   const appointments = await getHairstylistAppointments(peluqueroId, fecha);
@@ -162,18 +164,18 @@ export const calculateAvailableSlots = async (params: AvailabilityParams): Promi
     return [];
   }
 
-  // 6. Generate possible time slots (every 15 minutes)
+  // 6. Generate possible time slots
+  // Slots are spaced by totalDuration (service + buffer) but only show service duration to client
   const availableSlots: TimeSlot[] = [];
-  const slotInterval = 15; // minutes
 
-  for (let startMinutes = openingMinutes; startMinutes + totalDuration <= closingMinutes; startMinutes += slotInterval) {
+  for (let startMinutes = openingMinutes; startMinutes + totalDuration <= closingMinutes; startMinutes += totalDuration) {
     const endMinutes = startMinutes + totalDuration;
 
     // Check if this slot overlaps with any blocked period
     if (!hasOverlap(startMinutes, endMinutes, blockedPeriods)) {
       availableSlots.push({
         inicio: minutesToTime(startMinutes),
-        fin: minutesToTime(endMinutes),
+        fin: minutesToTime(startMinutes + serviceDuration), // Only show service duration, not buffer
       });
     }
   }

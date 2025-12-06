@@ -24,7 +24,8 @@ function AbsencesContent() {
     peluqueroId: '',
     fechaInicio: '',
     fechaFin: '',
-    motivo: ''
+    motivo: '',
+    descripcion: ''
   });
 
   useEffect(() => {
@@ -49,15 +50,21 @@ function AbsencesContent() {
   const handleOpenModal = (absence?: any) => {
     if (absence) {
       setEditingAbsence(absence);
+      // Handle both populated and non-populated peluqueroId
+      const peluqueroId = typeof absence.peluqueroId === 'string' 
+        ? absence.peluqueroId 
+        : absence.peluqueroId?._id || '';
+      
       setFormData({
-        peluqueroId: absence.peluqueroId._id,
+        peluqueroId,
         fechaInicio: absence.fechaInicio.split('T')[0],
         fechaFin: absence.fechaFin.split('T')[0],
-        motivo: absence.motivo || ''
+        motivo: absence.motivo || '',
+        descripcion: absence.descripcion || ''
       });
     } else {
       setEditingAbsence(null);
-      setFormData({ peluqueroId: '', fechaInicio: '', fechaFin: '', motivo: '' });
+      setFormData({ peluqueroId: '', fechaInicio: '', fechaFin: '', motivo: '', descripcion: '' });
     }
     setShowModal(true);
   };
@@ -128,14 +135,21 @@ function AbsencesContent() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {absences.map((absence) => (
                   <tr key={absence._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm text-gray-900">{absence.peluqueroId.nombre}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {absence.peluqueroId?.usuarioId?.nombre || 'N/A'}
+                    </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
                       {new Date(absence.fechaInicio).toLocaleDateString('es-ES')}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
                       {new Date(absence.fechaFin).toLocaleDateString('es-ES')}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{absence.motivo || '-'}</td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-900">{absence.motivo || '-'}</div>
+                      {absence.descripcion && (
+                        <div className="text-sm text-gray-500">{absence.descripcion}</div>
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-right text-sm font-medium">
                       <button onClick={() => handleOpenModal(absence)} className="text-blue-600 hover:text-blue-900 mr-3">
                         Editar
@@ -153,8 +167,14 @@ function AbsencesContent() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+        <div 
+          className="fixed inset-0 flex items-center justify-center p-4 z-50"
+          onClick={() => setShowModal(false)}
+        >
+          <div 
+            className="bg-white rounded-lg max-w-md w-full p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h2 className="text-xl font-bold text-gray-900 mb-4">
               {editingAbsence ? 'Editar Ausencia' : 'Nueva Ausencia'}
             </h2>
@@ -165,11 +185,13 @@ function AbsencesContent() {
                   required
                   value={formData.peluqueroId}
                   onChange={(e) => setFormData({ ...formData, peluqueroId: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Seleccionar...</option>
                   {hairstylists.map((hs) => (
-                    <option key={hs._id} value={hs._id}>{hs.usuario.nombre}</option>
+                    <option key={hs._id} value={hs._id}>
+                      {hs.usuarioId?.nombre || 'Sin nombre'}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -180,7 +202,7 @@ function AbsencesContent() {
                   required
                   value={formData.fechaInicio}
                   onChange={(e) => setFormData({ ...formData, fechaInicio: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
@@ -190,27 +212,46 @@ function AbsencesContent() {
                   required
                   value={formData.fechaFin}
                   onChange={(e) => setFormData({ ...formData, fechaFin: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Motivo</label>
-                <textarea
+                <label className="block text-sm font-medium text-gray-700 mb-1">Motivo *</label>
+                <select
+                  required
                   value={formData.motivo}
                   onChange={(e) => setFormData({ ...formData, motivo: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Seleccionar motivo...</option>
+                  <option value="Vacaciones">Vacaciones</option>
+                  <option value="Enfermedad">Enfermedad</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                <textarea
+                  value={formData.descripcion}
+                  onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Detalles adicionales (opcional)"
+                  maxLength={500}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancelar
                 </button>
-                <button type="submit" className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <button 
+                  type="submit" 
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
                   {editingAbsence ? 'Actualizar' : 'Crear'}
                 </button>
               </div>
